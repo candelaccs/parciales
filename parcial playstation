@@ -1,0 +1,195 @@
+program parcialplay;
+
+type rdia = 1..31;
+ 
+ rmes = 1..12;
+ 
+ compra = record // el registro que se lee //
+  codjuego: integer;
+  codcli: integer;
+  dia: rdia;
+  mes: rmes;
+ end;
+ 
+ compra2 = record // el que se guarda
+  codjuego: integer;
+  mes: rmes;
+  dia: rdia;
+ end;
+ 
+ 
+ lista = ^nod;
+ nod = record
+  dato: compra2;
+  sig: lista;
+ end;
+  
+ registro = record // aca guarda el registro de lista ya que almacena una sola vez el codigo y las otras veces las distintas compras //
+ codcliente: integer; 
+ lista: lista;
+ end;
+  
+ arbol = ^nodo; // en el arbol se guarda x codcliente y cada cliente tiene una lista ya que pueden ser mas de una compra //
+ nodo = record
+  dato: registro;
+  hi: arbol;
+  hd: arbol;
+ end;
+ 
+ regmes = record
+  mes: rmes;
+  cantidad: integer;
+ end;
+ 
+ vector = array [rmes] of regmes;
+
+procedure incisoA (var a: arbol; var v:vector);
+
+ procedure leer (var c: compra);
+ begin
+  
+  writeln ('ingrese codigo de cliente');
+  readln (c.codcli);
+  if (c.codcli <> 0) then begin
+   writeln ('ingrese el codigo de juego');
+   readln (c.codjuego);
+   writeln ('ingrese dia');
+   readln (c.dia);
+   writeln ('ingrese mes');
+   readln (c.mes);
+  end;
+ end;
+  
+ 
+ procedure agregarLista (var l: lista; c: compra);
+  
+  procedure armar (var c2: compra2; c: compra);
+  begin
+   c2.codjuego:= c.codjuego;
+   c2.mes:= c.mes;
+   c2.dia:= c.dia;
+  end;
+
+ var 
+  nue: lista;
+  c2: compra2;
+ begin
+  new (nue);
+  armar (c2,c);
+  nue^.dato:= c2;
+  nue^.sig:= l;
+  l:= nue;
+ end;
+ 
+ procedure agregarArbol (var a: arbol; c: compra);
+ begin
+  
+  if (a = nil) then begin
+   new (a);
+   a^.dato.lista:= nil;
+   a^.dato.codcliente:= c.codcli;
+   agregarLista (a^.dato.lista, c);
+   a^.hi:= nil;
+   a^.hd:= nil;
+  end
+  else
+  if (a^.dato.codcliente = c.codcli) then
+   agregarLista (a^.dato.lista, c)
+  else
+   if (a^.dato.codcliente > c.codcli) then
+    agregarArbol (a^.hi, c)
+   else
+    agregarArbol (a^.hd, c);
+ end; 
+ 
+ procedure inicializarVec (var v: vector);
+ var
+  i: integer;
+ begin
+  for i:= 1 to 12 do begin
+   v[i].cantidad:= 0;
+   v[i].mes:= i;
+  end;
+ end;
+ 
+ procedure cargarVec (var v: vector; mes: integer);
+ begin
+  v[mes].cantidad:= v[mes].cantidad+1;
+ end;
+  
+var
+ c: compra;
+begin
+ a:= nil;
+ inicializarVec(v);
+ 
+ writeln ('se piden los datos de compras'); 
+ leer(c);
+ while (c.codcli <> 0) do begin
+  agregarArbol (a,c);
+  cargarVec (v, c.mes);
+  writeln ('--------------------------');
+  leer (c);
+ end;
+
+end;
+
+procedure incisoB (l: lista; a: arbol);
+ 
+ function buscar (a: arbol; codigo: integer): lista;
+ begin
+  
+  if (a = nil) then
+   buscar:= nil
+  else
+   if (a^.dato.codcliente = codigo) then
+    buscar:= a^.dato.lista
+   else
+    if (a^.dato.codcliente > codigo) then 
+     buscar (a^.hi,codigo)
+    else
+     buscar (a^.hd, codigo);
+ end;
+var
+ codigo: integer;
+begin
+ 
+ writeln ('ingrese un codigo de cliente a buscar');
+ readln (codigo);
+ l:= buscar (a,codigo);
+end; 
+   
+procedure incisoC (var v: vector);
+var
+ i,j, pos: integer;
+ item: regmes;
+begin
+ 
+ for i:= 1 to 11 do begin
+  pos:= i;
+  for j:= i+1 to 12 do
+   if (v[j].cantidad < v[pos].cantidad) then
+    pos:= j;
+  item:= v[pos];
+  v[pos]:= v[i];
+  v[i]:= item; 
+ end;
+end;
+   
+
+var // pp //
+ a: arbol;
+ v:vector;
+ l: lista;
+begin
+ 
+ incisoA (a,v);
+ 
+ incisoB (l,a);
+ if (l = nil) then
+  writeln ('no se encontro el lcinete o no existe')
+ else
+  writeln ('ya se retornaron todas las compras que realizo el cliente ingresado');
+  
+ incisoC (v);
+end. 
