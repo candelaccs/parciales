@@ -1,0 +1,206 @@
+program supermercado;
+
+type  rmes = 1..12; 
+
+  compra = record
+   codcliente: integer;
+   mes: rmes;
+   monto: real;
+  end;
+  
+  vector = array [rmes] of real;
+  
+  cliente = record
+   codigo: integer;
+   meses: vector;
+  end;
+  
+  arbol = ^nodo;
+  nodo = record
+   dato: cliente;
+   hi: arbol;
+   hd: arbol;
+  end;
+  
+procedure incisoA (var a: arbol);
+
+ procedure leer (var c: compra);
+ begin
+  
+  writeln ('ingrese el codigo');
+  readln (c.codcliente);
+  if (c.codcliente <> 0) then begin
+   writeln ('ingrese el mes');
+   readln (c.mes);
+   writeln ('ingrese el monto');
+   readln (c.monto);
+  end;
+ end;
+ 
+ procedure inicializarVector (var v: vector);
+ var
+  i: integer;
+ begin
+  for i:= 1 to 12 do
+   v[i]:= 0;
+ end;
+ 
+ procedure cargarVector (var v: vector; c: compra);
+ begin
+  v[c.mes]:= v[c.mes] + c.monto;
+ end;
+ 
+ procedure arbol (var a: arbol; c: compra);
+ begin
+  
+  if (a = nil) then begin
+   new (a);
+   a^.dato.codigo:= c.codcliente;
+   inicializarVector (a^.dato.meses);
+   cargarVector (a^.dato.meses, c);
+   a^.hi:= nil;
+   a^.hd:= nil;
+  end
+  else
+   if (a^.dato.codigo = c.codcliente) then
+    cargarVector (a^.dato.meses, c)
+   else
+    if (a^.dato.codigo > c.codcliente) then 
+     arbol (a^.hi, c)
+    else
+     arbol (a^.hd, c);
+ end;
+
+var
+ c: compra;
+begin
+ 
+ a:= nil;
+ 
+ writeln ('ingrese los datos de las compras de los clientes');
+ writeln ('----------------');
+ leer (c);
+ while (c.codcliente <> 0) do begin
+  arbol (a, c);
+  writeln ('---------------');
+  leer (c);
+ end;
+end;
+
+
+procedure incisoB (a: arbol);
+ 
+ function maximo (v: vector): integer;
+ var
+  i: integer;
+  max: real;
+  maxmes: integer;
+ begin
+  max:= -1;
+  for i:= 1 to 12 do begin
+   if (v[i] > max) then begin
+    max:= v[i];
+    maxmes:= i;
+   end;
+  end;
+  maximo:= maxmes;
+ end;
+
+ function buscar (a:arbol; codigo: integer): integer;
+ begin
+   if (a = nil) then
+    buscar:= -1
+   else
+    if (a^.dato.codigo = codigo ) then
+     buscar:= maximo (a^.dato.meses)
+    else
+     if (a^.dato.codigo > codigo) then
+      buscar (a^.hi, codigo)
+     else
+      buscar (a^.hd, codigo);
+ end;
+    
+
+var
+ codigo: integer;
+ cli: integer;
+begin
+ 
+ writeln ('ingrese un codigo de cliente a buscar');
+ readln (codigo);
+ 
+ cli:= buscar (a, codigo);
+ 
+ if (cli = -1) then 
+  writeln ('el cliente no sed encontro no existe o no ha comprado nada')
+ else
+  writeln ('el mes del cliente con mayores gastos fue el mes ', cli );
+end;
+ 
+ 
+procedure incisoc (a: arbol);
+
+ {function cantidadMes (a: arbol; mes: integer): integer;
+ begin
+  if (a = nil) then
+   cantidadMes:= 0
+  else
+   if (a^.dato.meses[mes] = 0 ) then 
+    cantidadMes:= 1+ cantidadMes (a^.hi, mes)+ cantidadMes(a^.hd, mes)
+   else 
+    cantidadMes (a^.hi, mes);
+    cantidadMes (a^.hd, mes);
+ end;}
+ 
+  procedure cantidadMes (a: arbol; mes: integer; var cant: integer);
+  begin
+   if (a <> nil ) then begin
+    cantidadMes (a^.hi, mes, cant);
+    if (a^.dato.meses[mes] = 0) then
+     cant:= cant+1;
+    cantidadMes (a^.hd,mes, cant);
+   end;
+  end; 
+ 
+var
+ mes: integer;
+ cant: integer;
+begin
+ 
+ writeln ('ingrese el mes');
+ readln (mes);
+ cant:= 0;
+ cantidadMes (a,mes, cant);
+ 
+ if ( cant = 0) then
+  writeln ('todos los clientes han gastado dinero en el mes ', mes)
+ else
+  writeln ('la cantidad de personas que no gastaron nada en el mes ', mes, 'son ', cant);
+end;
+
+
+
+{procedure imprimirV (v: vector);  // solo para para probar //
+var
+ i: integer;
+begin
+ 
+ for i:= 1 to 12 do begin
+  writeln ('el monto del mes ', i , ' es ' , v[i]:2:0);
+ end;
+end;}
+
+var // pp //
+ a: arbol;
+begin
+ 
+ incisoA (a);
+{ imprimirV (a^.dato.meses);}
+ incisoB (a);
+ incisoC (a);
+ 
+end.
+  
+ 
+     
+  
