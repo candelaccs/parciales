@@ -141,7 +141,49 @@ begin
   
 end;
  
-procedure incisoC (l: lista
+procedure incisoC (l: lista);
+
+ procedure devolver (l: lista; var min, max: real; var codmin, codmax:integer);
+  
+  procedure minimo (peso: real; codcliente: integer; var min: real; var codmin: integer);
+  begin
+   if (peso < min) then begin
+    min:= peso;
+    codmin:= codcliente;
+   end;
+  end;
+  
+  procedure maximo (peso: real; codcliente: integer; var max:real; var codmax: integer);
+  begin
+   if (peso > max) then begin
+    max:= peso;
+    codmax:= codcliente;
+   end;
+  end;
+  
+ begin
+  if (l <> nil) then begin
+   minimo (l^.dato.peso, l^.dato.codcliente, min, codmin);
+   maximo (l^.dato.peso, l^.dato.codcliente, max, codmax);
+   devolver (l^.sig, min, max, codmin, codmax);
+  end;
+ end;
+
+var
+ max, min: real;
+ codmax, codmin: integer;
+begin
+ 
+ max:= -1;
+ min:= 9999;
+ 
+ devolver (l,min,max,codmin,codmax);
+ 
+ writeln ('el codigo de cliente con el envio con menos peso es ', codmin);
+ writeln ('el codigo de cliente con el envio con mas peso es ', codmax);
+
+end;
+
 
 var // pp //
  a: arbol;
